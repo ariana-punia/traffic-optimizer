@@ -1,208 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Traffic Optimizer — HCL Jigsaw Round 2</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Traffic Flow Optimizer — 15-minute comparison</title>
 <style>
-:root{--navy:#102746;--blue:#2463a6;--green:#16805d;--red:#c64b4b;--amber:#e4a32d;--bg:#f3f7fc;--line:#d6e2f0}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;color:#17304f}
-header{background:var(--navy);color:white;padding:22px clamp(16px,4vw,44px)}header h1{margin:0;font-size:clamp(1.45rem,3vw,2.2rem)}header p{margin:5px 0 0;color:#c7e3ff}
-main{max-width:1200px;margin:auto;padding:20px;display:grid;gap:16px}.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 3px 12px #16365b0b}
-h2{font-size:1.15rem;margin:0 0 12px}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
-label{font-weight:650;display:flex;justify-content:space-between;gap:12px}input[type=range]{width:100%;accent-color:var(--blue);margin:10px 0}
-button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:#e6eef8;color:var(--navy)}button.primary{background:var(--blue);color:white}button:focus,input:focus{outline:3px solid #7cb7f6;outline-offset:2px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
-.mode.fixed{border-top:5px solid var(--red)}.mode.ai{border-top:5px solid var(--green)}
-.tag{display:inline-block;border-radius:99px;padding:3px 9px;font-size:.78rem;font-weight:700;background:#edf2f7}
-.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
-.metric{background:#f5f8fc;border-radius:10px;padding:10px}.metric small{display:block;color:#58708c}.metric strong{font-size:1.35rem}
-.signalrow{display:flex;align-items:center;gap:10px;margin:9px 0}.signal{background:#1c2a3d;border-radius:20px;padding:5px 7px;display:flex;gap:5px}
-.lamp{height:15px;width:15px;border-radius:50%;background:#465362;border:1px solid #ffffff55}.lamp.red.on{background:#ff4b4b;box-shadow:0 0 8px #ff4b4b}.lamp.amber.on{background:#ffc247;box-shadow:0 0 8px #ffc247}.lamp.green.on{background:#35d78c;box-shadow:0 0 8px #35d78c}
-.roadwrap{display:grid;grid-template-columns:1fr;gap:10px}.intersection{height:250px;position:relative;border-radius:12px;overflow:hidden;background:#e6f1e9;border:1px solid #c8dfd0}
-.road-v,.road-h{position:absolute;background:#626d7b}.road-v{width:100px;height:100%;left:calc(50% - 50px)}.road-h{height:82px;width:100%;top:calc(50% - 41px)}
-.lane-v,.lane-h{position:absolute;opacity:.85}.lane-v{height:100%;left:50%;border-left:2px dashed #f4e8b9}.lane-h{width:100%;top:50%;border-top:2px dashed #f4e8b9}
-.car{position:absolute;width:17px;height:27px;border:2px solid #fff;border-radius:6px;box-shadow:0 2px 4px #0006;z-index:3;transition:filter .2s;overflow:hidden}.car:after{content:'';position:absolute;left:3px;right:3px;top:4px;height:7px;border-radius:2px;background:#d9f2ffb8;border:1px solid #ffffffa8}.car.moving{animation-duration:3.2s;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}.car.n.moving{animation-name:driveNorth}.car.s.moving{animation-name:driveSouth}.car.e.moving{animation-name:driveEast}.car.w.moving{animation-name:driveWest}@keyframes driveNorth{0%{transform:translateY(0)}100%{transform:translateY(245px);opacity:1}}
-@keyframes driveSouth{0%{transform:translateY(0)}100%{transform:translateY(-245px);opacity:1}}
-@keyframes driveEast{0%{transform:translateX(0)}100%{transform:translateX(-420px)}}
-@keyframes driveWest{0%{transform:translateX(0)}100%{transform:translateX(420px)}}.car.n{left:calc(50% - 35px)}.car.s{left:calc(50% + 18px)}.car.e{top:calc(50% - 31px)}.car.w{top:calc(50% + 7px)}
-.sighead{position:absolute;z-index:5;background:#182636;border:2px solid #aab5c2;border-radius:10px;padding:3px;display:flex;gap:2px;box-shadow:0 2px 5px #0005}.sighead .lamp{width:9px;height:9px}.sig-n{top:34px;left:calc(50% - 63px);flex-direction:column}.sig-s{bottom:34px;left:calc(50% + 43px);flex-direction:column}.sig-e{right:calc(50% - 92px);top:calc(50% - 61px)}.sig-w{left:calc(50% - 92px);top:calc(50% + 42px)}.dirlabel{position:absolute;font-size:.78rem;font-weight:800;color:#fff;text-shadow:0 1px 3px #000;z-index:2}.north{top:5px;left:calc(50% - 42px)}.south{bottom:5px;left:calc(50% - 42px)}.east{right:8px;top:calc(50% - 13px)}.west{left:8px;top:calc(50% - 13px)}
-.phase{font-weight:750;padding:8px 10px;background:#eef5fc;border-radius:8px}.bar{height:10px;background:#e7edf4;border-radius:99px;overflow:hidden;margin-top:5px}.bar span{display:block;height:100%;background:var(--blue);width:0%;transition:width .2s}
-table{width:100%;border-collapse:collapse;font-size:.94rem}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{color:#526983}
-.note{font-size:.88rem;color:#5a7088}.status{font-weight:700;color:var(--green)}footer{text-align:center;padding:0 18px 24px;color:#61758b}
-@media(max-width:520px){main{padding:12px}.panel{padding:14px}.metrics{grid-template-columns:1fr 1fr}th,td{padding:6px;font-size:.85rem}}
-</style>
-</head>
+:root{--navy:#102746;--blue:#2463a6;--green:#16805d;--red:#c64b4b;--amber:#e4a32d;--bg:#f3f7fc;--line:#d6e2f0;--ink:#17304f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}header{background:var(--navy);color:#fff;padding:22px max(16px,calc((100vw - 1180px)/2))}header h1{margin:0;font-size:clamp(1.5rem,3vw,2.15rem)}header p{margin:6px 0 0;color:#c7e3ff}main{max-width:1180px;margin:auto;padding:18px;display:grid;gap:15px}.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 3px 12px #16365b0b}h2{font-size:1.1rem;margin:0 0 10px}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.control label{font-weight:700;display:flex;justify-content:space-between;gap:10px}.control input{width:100%;accent-color:var(--blue)}.hint,.note{color:#5a7088;font-size:.87rem}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer;background:#e6eef8;color:var(--navy)}button.primary{background:var(--blue);color:#fff}button:disabled{opacity:.5;cursor:not-allowed}.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px}.mode.fixed{border-top:5px solid var(--red)}.mode.adaptive{border-top:5px solid var(--green)}.tag{font-size:.75rem;background:#edf2f7;padding:3px 8px;border-radius:99px}.scene{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#eaf4ec}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.stat{background:#f5f8fc;padding:9px;border-radius:9px}.stat small{display:block;color:#58708c}.stat strong{font-size:1.3rem}.phase{font-weight:750;background:#eef5fc;padding:7px 9px;border-radius:8px;margin:8px 0}.progress{height:9px;background:#e7edf4;border-radius:99px;overflow:hidden}.progress span{height:100%;display:block;background:var(--blue);width:0}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{color:#526983}.good{color:var(--green);font-weight:800}.warning{color:#8a5b00;background:#fff7df;border-radius:8px;padding:10px}.status{font-weight:700}footer{text-align:center;color:#61758b;padding:0 16px 24px}@media(max-width:520px){main{padding:10px}.panel{padding:12px}td,th{padding:6px;font-size:.86rem}}
+</style></head>
 <body>
-<header><h1>🚦 AI Traffic Optimizer</h1><p>HCL Jigsaw · Round 2 — AI and Digital Revolution</p></header>
+<header><h1>🚦 Traffic Flow Optimizer</h1><p>HCL Jigsaw · Round 2 — AI and Digital Revolution</p></header>
 <main>
 <section class="panel">
 <h2>1. Set the same traffic inputs for both modes</h2>
 <div class="controls">
-<div><label for="ns">North–South arrivals <output id="nsOut">30</output> vehicles/min</label><input id="ns" type="range" min="0" max="60" value="30"><div class="bar"><span id="nsBar"></span></div></div>
-<div><label for="ew">East–West arrivals <output id="ewOut">10</output> vehicles/min</label><input id="ew" type="range" min="0" max="60" value="10"><div class="bar"><span id="ewBar"></span></div></div>
-<div><label for="cycle">Signal cycle <output id="cycleOut">60</output> seconds</label><input id="cycle" type="range" min="40" max="120" step="10" value="60"><p class="note">Shared cycle duration. Each direction receives a green phase; transitions are simplified.</p></div>
+ <div class="control"><label for="ns">North–South arrivals <output id="nsOut">270</output></label><input id="ns" type="range" min="40" max="400" step="5" value="270"><div class="hint">Vehicles arriving during the 15-minute test</div></div>
+ <div class="control"><label for="ew">East–West arrivals <output id="ewOut">95</output></label><input id="ew" type="range" min="20" max="300" step="5" value="95"><div class="hint">Vehicles arriving during the same 15-minute test</div></div>
+ <div class="control"><label>Test duration <output>15 minutes</output></label><div class="hint">Fixed for both modes. The simulation runs in about 60 seconds (accelerated time).</div><label style="margin-top:12px" for="cycle">Signal cycle <output id="cycleOut">60 s</output></label><input id="cycle" type="range" min="50" max="90" step="10" value="60"></div>
 </div>
-<div class="actions"><button id="preset1">Busy N–S (30 / 10)</button><button id="preset2">Busy E–W (10 / 30)</button><button id="preset3">Balanced (20 / 20)</button><button id="reset">Reset</button></div>
+<div class="actions"><button id="preset1">Busier North–South</button><button id="preset2">Busier East–West</button><button id="preset3">Balanced traffic</button><button id="reset">Reset</button></div>
+<p class="note">Inputs are illustrative simulation arrivals, not real Bengaluru traffic counts. Both modes receive exactly the same arrivals. The adaptive mode changes its green-time split based on the two input totals.</p>
 </section>
 <section class="modes">
-<article class="panel mode fixed">
-<h2>Fixed-timer mode <span class="tag">Preset</span></h2><p class="note">Uses a 50:50 green-time split regardless of queue size.</p>
-<div class="signalrow"><div class="signal" aria-label="Fixed signal"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="phase" id="fixedPhase">Ready to simulate</div></div>
-<div class="roadwrap"><div class="intersection" id="fixedRoad"><div class="road-v"></div><div class="road-h"></div><div class="lane-v"></div><div class="lane-h"></div><div class="sighead sig-n" data-signal="ns"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="sighead sig-s" data-signal="ns"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="sighead sig-e" data-signal="ew"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="sighead sig-w" data-signal="ew"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><span class="dirlabel north">N</span><span class="dirlabel south">S</span><span class="dirlabel east">E</span><span class="dirlabel west">W</span></div></div>
-<div class="metrics"><div class="metric"><small>Green N–S</small><strong id="fNSgreen">30 s</strong></div><div class="metric"><small>Green E–W</small><strong id="fEWgreen">30 s</strong></div><div class="metric"><small>Vehicles served*</small><strong id="fServed">—</strong></div><div class="metric"><small>Vehicles left waiting*</small><strong id="fQueue">—</strong></div></div>
-<p class="note" id="fDetail">Press “Run simulation” to start.</p>
-</article>
-<article class="panel mode ai">
-<h2>Adaptive AI mode <span class="tag">Demand-based</span></h2><p class="note">Allocates more green time to the direction with greater demand, with a minimum phase for each road.</p>
-<div class="signalrow"><div class="signal" aria-label="Adaptive signal"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="phase" id="aiPhase">Ready to simulate</div></div>
-<div class="roadwrap"><div class="intersection" id="aiRoad"><div class="road-v"></div><div class="road-h"></div><div class="lane-v"></div><div class="lane-h"></div><div class="sighead sig-n" data-signal="ns"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="sighead sig-s" data-signal="ns"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="sighead sig-e" data-signal="ew"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><div class="sighead sig-w" data-signal="ew"><span class="lamp red on"></span><span class="lamp amber"></span><span class="lamp green"></span></div><span class="dirlabel north">N</span><span class="dirlabel south">S</span><span class="dirlabel east">E</span><span class="dirlabel west">W</span></div></div>
-<div class="metrics"><div class="metric"><small>Green N–S</small><strong id="aNSgreen">—</strong></div><div class="metric"><small>Green E–W</small><strong id="aEWgreen">—</strong></div><div class="metric"><small>Vehicles served*</small><strong id="aServed">—</strong></div><div class="metric"><small>Vehicles left waiting*</small><strong id="aQueue">—</strong></div></div>
-<p class="note" id="aDetail">AI timing will be calculated from the same inputs.</p>
-</article>
+<article class="panel mode fixed"><h2>Fixed-timer mode <span class="tag">Equal green split</span></h2><div class="phase" id="fPhase">Ready to run</div><canvas class="scene" id="fCanvas" width="640" height="300" aria-label="Fixed-timer traffic intersection animation"></canvas><div class="stats"><div class="stat"><small>Green N–S</small><strong id="fNSgreen">27 s</strong></div><div class="stat"><small>Green E–W</small><strong id="fEWgreen">27 s</strong></div><div class="stat"><small>Vehicles cleared</small><strong id="fServed">—</strong></div><div class="stat"><small>Vehicles left waiting</small><strong id="fQueue">—</strong></div></div><p class="note" id="fDetail">Run the comparison to see results.</p></article>
+<article class="panel mode adaptive"><h2>Adaptive signal mode <span class="tag">Demand-based rule</span></h2><div class="phase" id="aPhase">Ready to run</div><canvas class="scene" id="aCanvas" width="640" height="300" aria-label="Adaptive traffic intersection animation"></canvas><div class="stats"><div class="stat"><small>Green N–S</small><strong id="aNSgreen">—</strong></div><div class="stat"><small>Green E–W</small><strong id="aEWgreen">—</strong></div><div class="stat"><small>Vehicles cleared</small><strong id="aServed">—</strong></div><div class="stat"><small>Vehicles left waiting</small><strong id="aQueue">—</strong></div></div><p class="note" id="aDetail">Run the comparison to see results.</p></article>
 </section>
-<section class="panel">
-<h2>2. Run the comparison</h2>
-<p>Both modes receive the exact same arrivals and run for one signal cycle. The animation shows vehicles flowing through the junction one after another during their green phase; the results use the stated simplified assumptions.</p>
-<div class="actions"><button class="primary" id="run">▶ Run simulation</button><button id="stop">■ Stop animation</button></div>
-<div class="metrics"><div class="metric"><small>Fixed-mode remaining queue*</small><strong id="sumF">—</strong></div><div class="metric"><small>Adaptive-mode remaining queue*</small><strong id="sumA">—</strong></div><div class="metric"><small>Difference in waiting queue*</small><strong id="diff">—</strong></div><div class="metric"><small>Inputs held constant</small><strong id="same">Yes</strong></div></div>
-<div id="conclusion" class="phase">Change the traffic sliders, then run the simulation.</div>
-
-</section>
-<section class="panel">
-<h2>3. Simulation data</h2>
-<table><thead><tr><th>Metric</th><th>Fixed timer</th><th>Adaptive rule</th></tr></thead><tbody id="results"><tr><td colspan="3">The comparison is calculated automatically when the simulation runs.</td></tr></tbody></table>
-<div class="actions"><button id="csv">Download results as CSV</button><button id="copy">Copy summary</button></div>
-<p class="note" id="exportStatus" aria-live="polite"></p>
-</section>
-</main>
-<footer>Same traffic inputs · Two timing strategies · A fair comparison</footer>
+<section class="panel"><h2>2. Run the 15-minute comparison</h2><div class="progress"><span id="progress"></span></div><p id="status" class="status">Ready. Press Run to begin the 15-minute simulated test.</p><div class="actions"><button id="run" class="primary">▶ Run 15-minute simulation</button><button id="stop" disabled>■ Stop</button></div><div class="stats"><div class="stat"><small>Simulated time</small><strong id="time">0:00 / 15:00</strong></div><div class="stat"><small>Inputs held constant</small><strong>Yes</strong></div><div class="stat"><small>Fixed vehicles waiting</small><strong id="sumF">—</strong></div><div class="stat"><small>Adaptive vehicles waiting</small><strong id="sumA">—</strong></div></div><div class="warning">Model assumptions: one vehicle can pass per 2 seconds of green; arrivals are spread evenly through 15 minutes; turning movements, pedestrians, weather and real-world driver behaviour are not modelled. Results are deterministic simulation estimates, not field measurements.</div></section>
+<section class="panel"><h2>3. Final simulation data for your presentation</h2><table><thead><tr><th>Metric</th><th>Fixed timer</th><th>Adaptive rule</th></tr></thead><tbody id="results"><tr><td colspan="3">Run the full simulation to calculate results.</td></tr></tbody></table><div class="actions"><button id="csv" disabled>Download results as CSV</button><button id="copy" disabled>Copy summary</button></div><p id="exportStatus" class="note"></p></section>
+</main><footer>Same 15-minute traffic arrivals · Two timing strategies · Transparent assumptions</footer>
 <script>
-const $=id=>document.getElementById(id);
-let last=null, animation=null;
-function safeNum(value,fallback=0){const n=Number(value);return Number.isFinite(n)?n:fallback}
-function values(){return {ns:Math.max(0,safeNum($('ns')?.value,30)),ew:Math.max(0,safeNum($('ew')?.value,10)),cycle:Math.max(40,safeNum($('cycle')?.value,60))}}
-function timings(v){
- const transition=Math.max(4,Math.round(v.cycle*.1));
- const greenTotal=v.cycle-transition;
- const min=Math.min(10,Math.floor(greenTotal/2));
- const fixedNS=Math.floor(greenTotal/2), fixedEW=greenTotal-fixedNS;
- let aiNS;
- if(v.ns+v.ew===0) aiNS=Math.floor(greenTotal/2);
- else aiNS=Math.round(greenTotal*v.ns/(v.ns+v.ew));
- aiNS=Math.max(min,Math.min(greenTotal-min,aiNS));
- return {transition,fixedNS,fixedEW,aiNS,aiEW:greenTotal-aiNS};
-}
-function calculate(v,nsGreen,ewGreen,t,fraction=1){
- // Guard every input so a missing or invalid value can never appear as 'NaN vehicles'.
- const cycle=Math.max(1,safeNum(v?.cycle,60));
- nsGreen=Math.max(0,safeNum(nsGreen,0)); ewGreen=Math.max(0,safeNum(ewGreen,0)); fraction=Math.max(0,Math.min(1,safeNum(fraction,1)));
- const nsRate=Math.max(0,safeNum(v?.ns,0)), ewRate=Math.max(0,safeNum(v?.ew,0));
- // Convert the arrival rates (vehicles/minute) into arrivals during this cycle or elapsed fraction.
- const arrivalsNS=Math.round(nsRate*cycle/60*fraction);
- const arrivalsEW=Math.round(ewRate*cycle/60*fraction);
- const capNS=Math.floor(nsGreen/2),capEW=Math.floor(ewGreen/2);
- const servedNS=Math.min(arrivalsNS,capNS),servedEW=Math.min(arrivalsEW,capEW);
- const qNS=arrivalsNS-servedNS,qEW=arrivalsEW-servedEW;
- const served=servedNS+servedEW,queue=qNS+qEW,total=arrivalsNS+arrivalsEW;
- const avgWait=total?Math.round((queue*cycle/2/total)*10)/10:0;
- return {served,queue,servedNS,servedEW,qNS,qEW,avgWait};
-}
-function renderRoad(id,queues,phase='idle',progress=0){
- const road=$(id);road.querySelectorAll('.car').forEach(e=>e.remove());
- const dirs=[['n',queues.ns,'#2488dc'],['s',queues.ns,'#2488dc'],['e',queues.ew,'#e0a12a'],['w',queues.ew,'#e0a12a']];
- dirs.forEach(([dir,n,color])=>{
-   const count=Math.min(3,Math.max(1,Math.ceil(n/2)));
-   for(let i=0;i<count;i++){
-     const c=document.createElement('span');c.className='car '+dir;c.style.background=color;
-     c.setAttribute('aria-label',dir+' direction vehicle');c.dataset.queueIndex=String(i);
-     if(dir==='n'){c.style.left='calc(50% - 38px)';c.style.top=(5+i*21)+'px';c.style.transform='rotate(180deg)';}
-     if(dir==='s'){c.style.left='calc(50% + 20px)';c.style.bottom=(5+i*21)+'px';}
-     if(dir==='e'){c.style.top='calc(50% - 37px)';c.style.right=(7+i*24)+'px';c.style.transform='rotate(-90deg)';}
-     if(dir==='w'){c.style.top='calc(50% + 10px)';c.style.left=(7+i*24)+'px';c.style.transform='rotate(90deg)';}
-     c.style.animationDelay=(-i*0.62)+'s';
-     c.style.animationDuration=(3.5+i*.12)+'s';
-     road.appendChild(c);
-   }
- });
- updateCars(id,phase);
-}
-function updateCars(id,phase){
- const road=$(id);
- road.querySelectorAll('.car').forEach(c=>{
-   const dir=c.classList.contains('n')||c.classList.contains('s')?'N–S':'E–W';
-   const go=(dir==='N–S'&&phase==='N–S green')||(dir==='E–W'&&phase==='E–W green');
-   c.classList.toggle('moving',go && c.dataset.queueIndex==='0');
- });
-}
-function setRoadSignals(id,phase){
- const road=$(id);
- road.querySelectorAll('.sighead').forEach(head=>{
-   const active=(head.dataset.signal==='ns' && phase==='N–S green')||(head.dataset.signal==='ew' && phase==='E–W green');
-   const lamps=head.querySelectorAll('.lamp');lamps.forEach(l=>l.classList.remove('on'));
-   if(phase==='Transition')lamps[1].classList.add('on');else lamps[active?2:0].classList.add('on');
- });
-}
-function lampMode(el,phase){const lamps=el.querySelectorAll('.lamp');lamps.forEach(x=>x.classList.remove('on'));lamps[phase==='N–S green'?2:phase==='E–W green'?2:phase==='Transition'?1:0].classList.add('on');}
-function show(){
- const v=values(),t=timings(v);
- $('nsOut').textContent=v.ns;$('ewOut').textContent=v.ew;$('cycleOut').textContent=v.cycle;
- $('nsBar').style.width=(v.ns/60*100)+'%';$('ewBar').style.width=(v.ew/60*100)+'%';
- $('fNSgreen').textContent=t.fixedNS+' s';$('fEWgreen').textContent=t.fixedEW+' s';
- $('aNSgreen').textContent=t.aiNS+' s';$('aEWgreen').textContent=t.aiEW+' s';
- last={v,t,f:calculate(v,t.fixedNS,t.fixedEW,t),a:calculate(v,t.aiNS,t.aiEW,t)};
- const {f,a}=last;
- $('fServed').textContent=f.served;$('fQueue').textContent=f.queue;
- $('aServed').textContent=a.served;$('aQueue').textContent=a.queue;
- $('fDetail').textContent=`N–S serves ${f.servedNS}; E–W serves ${f.servedEW}. Estimated average wait: ${f.avgWait} s per arriving vehicle.`;
- $('aDetail').textContent=`N–S serves ${a.servedNS}; E–W serves ${a.servedEW}. Estimated average wait: ${a.avgWait} s per arriving vehicle.`;
- $('sumF').textContent=f.queue+' vehicles';$('sumA').textContent=a.queue+' vehicles';
- $('diff').textContent=Math.abs(f.queue-a.queue)+' vehicles';
- $('same').textContent='Yes';
- $('results').innerHTML=`<tr><td>Green time N–S</td><td>${t.fixedNS} s</td><td>${t.aiNS} s</td></tr><tr><td>Green time E–W</td><td>${t.fixedEW} s</td><td>${t.aiEW} s</td></tr><tr><td>Vehicles served (estimate)</td><td>${f.served}</td><td>${a.served}</td></tr><tr><td>Vehicles left waiting (estimate)</td><td>${f.queue}</td><td>${a.queue}</td></tr><tr><td>Estimated average wait</td><td>${f.avgWait} s</td><td>${a.avgWait} s</td></tr>`;
- if(a.queue<f.queue)$('conclusion').textContent=`In this scenario, the adaptive rule leaves ${f.queue-a.queue} fewer vehicles waiting.`;
- else if(a.queue>f.queue)$('conclusion').textContent=`In this scenario, the fixed timer leaves ${a.queue-f.queue} fewer vehicles waiting. Review the allocation rule and test more cases.`;
- else $('conclusion').textContent='Both modes leave the same estimated queue in this scenario. Try different traffic inputs.';
- renderRoad('fixedRoad',{ns:f.qNS,ew:f.qEW});renderRoad('aiRoad',{ns:a.qNS,ew:a.qEW});
-}
-function stop(){if(animation){clearInterval(animation);animation=null}document.querySelectorAll('.car').forEach(c=>{c.style.animationPlayState='paused'});}
-function run(){
- stop();show();document.querySelectorAll('.car').forEach(c=>{c.style.animationPlayState='running'});const v=values(),t=last.t;let elapsed=0;
- $('exportStatus').textContent='Simulation running — cars move only when their signal is green.';
- const tick=()=>{
-   elapsed++;
-   const sec=(elapsed-1)%v.cycle;
-   const cycleElapsed=sec+1;
-   const phaseFor=(nsGreen)=>sec<nsGreen?'N–S green':sec<nsGreen+t.transition?'Transition':'E–W green';
-   const fp=phaseFor(t.fixedNS),ap=phaseFor(t.aiNS);
-   $('fixedPhase').textContent=`${fp} · ${cycleElapsed}s / ${v.cycle}s`;
-   $('aiPhase').textContent=`${ap} · ${cycleElapsed}s / ${v.cycle}s`;
-   const fraction=cycleElapsed/v.cycle;
-   const liveF=calculate(v,Math.round(t.fixedNS*fraction),Math.round(t.fixedEW*fraction),t,fraction);
-   const liveA=calculate(v,Math.round(t.aiNS*fraction),Math.round(t.aiEW*fraction),t,fraction);
-   $('fServed').textContent=liveF.served;$('fQueue').textContent=liveF.queue;
-   $('aServed').textContent=liveA.served;$('aQueue').textContent=liveA.queue;
-   $('fDetail').textContent=`Live estimate · served ${liveF.served} · waiting ${liveF.queue} · ${Math.round(fraction*100)}% of cycle`;
-   $('aDetail').textContent=`Live estimate · served ${liveA.served} · waiting ${liveA.queue} · ${Math.round(fraction*100)}% of cycle`;
-   setRoadSignals('fixedRoad',fp);setRoadSignals('aiRoad',ap);
-   updateCars('fixedRoad',fp);updateCars('aiRoad',ap);document.querySelectorAll('.car').forEach(c=>{c.style.animationPlayState='running'});
-   $('sumF').textContent=liveF.queue+' vehicles';$('sumA').textContent=liveA.queue+' vehicles';
-   $('diff').textContent=Math.abs(liveF.queue-liveA.queue)+' vehicles';
-   if(cycleElapsed===v.cycle){
-     $('exportStatus').textContent='Cycle completed — simulation continues into the next cycle. Press Stop animation to pause.';
-     show();
-   }
- };
- tick();animation=setInterval(tick,1000);
-}
-['ns','ew','cycle'].forEach(id=>$(id).addEventListener('input',()=>{stop();show()}));
-$('preset1').onclick=()=>{stop();$('ns').value=30;$('ew').value=10;show()};
-$('preset2').onclick=()=>{stop();$('ns').value=10;$('ew').value=30;show()};
-$('preset3').onclick=()=>{stop();$('ns').value=20;$('ew').value=20;show()};
-$('reset').onclick=()=>{stop();$('ns').value=30;$('ew').value=10;$('cycle').value=60;show()};
-$('run').onclick=run;$('stop').onclick=()=>{stop();$('exportStatus').textContent='Simulation paused. Press Run to continue.'};
-$('csv').onclick=()=>{if(!last)show();const {v,t,f,a}=last;const csv='Metric,Fixed timer,Adaptive rule\\n'+[['N-S arrivals',v.ns,v.ns],['E-W arrivals',v.ew,v.ew],['Cycle (seconds)',v.cycle,v.cycle],['N-S green (seconds)',t.fixedNS,t.aiNS],['E-W green (seconds)',t.fixedEW,t.aiEW],['Vehicles served',f.served,a.served],['Vehicles waiting',f.queue,a.queue],['Estimated average wait (seconds)',f.avgWait,a.avgWait]].map(r=>r.join(',')).join('\\n');const blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),aTag=document.createElement('a');aTag.href=url;aTag.download='traffic-optimizer-results.csv';aTag.click();URL.revokeObjectURL(url);$('exportStatus').textContent='CSV downloaded.'};
-$('copy').onclick=async()=>{const {v,t,f,a}=last|| (show(),last);const s=`HCL Jigsaw AI Traffic Optimizer\\nSame inputs: N–S ${v.ns}, E–W ${v.ew} vehicles per minute; cycle ${v.cycle}s.\\nFixed timer: green ${t.fixedNS}s N–S / ${t.fixedEW}s E–W; served ${f.served}; waiting ${f.queue}; estimated average wait ${f.avgWait}s.\\nAdaptive rule: green ${t.aiNS}s N–S / ${t.aiEW}s E–W; served ${a.served}; waiting ${a.queue}; estimated average wait ${a.avgWait}s.\\nThese are simplified illustrative estimates, not real-world measurements.`;try{await navigator.clipboard.writeText(s);$('exportStatus').textContent='Summary copied.'}catch(e){$('exportStatus').textContent=s}};
-show();setRoadSignals('fixedRoad','N–S green');setRoadSignals('aiRoad','N–S green');updateCars('fixedRoad','N–S green');updateCars('aiRoad','N–S green');run();
-</script>
-</body></html>
+const $=id=>document.getElementById(id);const DURATION=900;const REAL_RUN_MS=60000;let raf=null,runState=null,finalResults=null;
+function vals(){return {ns:+$('ns').value,ew:+$('ew').value,cycle:+$('cycle').value}}
+function timing(v,mode){const transition=Math.max(6,Math.round(v.cycle*.1));const greenTotal=v.cycle-transition;let ns;if(mode==='fixed')ns=Math.floor(greenTotal/2);else{const sum=v.ns+v.ew;ns=sum?Math.round(greenTotal*v.ns/sum):Math.floor(greenTotal/2);const min=Math.min(10,Math.floor(greenTotal/2));ns=Math.max(min,Math.min(greenTotal-min,ns));}return {transition,ns,ew:greenTotal-ns,greenTotal,cycle:v.cycle};}
+function makeArrivals(count){const a=[];for(let i=0;i<count;i++)a.push((i+.5)*DURATION/count);return a;}
+function newModel(v,t){return {v,t,arrNS:makeArrivals(v.ns),arrEW:makeArrivals(v.ew),nextNS:0,nextEW:0,qNS:[],qEW:[],served:0,servedNS:0,servedEW:0,waitSum:0,waitCount:0,longestNS:0,longestEW:0,serviceClock:0,activeLast:null,moving:[],lastNSLane:0,lastEWLane:0};}
+function laneFor(dir,car){return car.lane;}
+function phaseAt(sec,t){const x=sec%t.cycle;return x<t.ns?'N–S green':x<t.ns+t.transition/2?'Transition 1':x<t.ns+t.transition/2+t.ew?'E–W green':'Transition 2';}
+let tCycle=60;
+function advance(model,from,to){const {t}=model;for(let s=Math.floor(from);s<Math.floor(to)&&s<DURATION;s++){
+ if(s>=DURATION)break;
+ while(model.nextNS<model.arrNS.length&&model.arrNS[model.nextNS]<=s+1){model.lastNSLane=1-model.lastNSLane;model.qNS.push({arr:model.arrNS[model.nextNS],id:'n'+model.nextNS,lane:model.lastNSLane===0?'n':'s'});model.nextNS++;}
+ while(model.nextEW<model.arrEW.length&&model.arrEW[model.nextEW]<=s+1){model.lastEWLane=1-model.lastEWLane;model.qEW.push({arr:model.arrEW[model.nextEW],id:'e'+model.nextEW,lane:model.lastEWLane===0?'e':'w'});model.nextEW++;}
+ model.longestNS=Math.max(model.longestNS,model.qNS.length);model.longestEW=Math.max(model.longestEW,model.qEW.length);
+ const cyc=s%model.v.cycle;let active=null;if(cyc<t.ns)active='ns';else if(cyc>=t.ns+t.transition/2&&cyc<t.ns+t.transition/2+t.ew)active='ew';
+ if(active){if(model.activeLast!==active){model.serviceClock=0;model.activeLast=active;}model.serviceClock+=1;if(model.serviceClock>=2){model.serviceClock-=2;const q=active==='ns'?model.qNS:model.qEW;if(q.length){const car=q.shift();model.served++;if(active==='ns')model.servedNS++;else model.servedEW++;model.waitSum+=Math.max(0,s-car.arr);model.waitCount++;model.moving.push({lane:laneFor(active,car),p:0,id:car.id});}}}
+ model.moving.forEach(c=>c.p+=1/2.5);model.moving=model.moving.filter(c=>c.p<1.1);
+ }}
+function setupModels(v){tCycle=v.cycle;const tf=timing(v,'fixed'),ta=timing(v,'adaptive');return {f:newModel(v,tf),a:newModel(v,ta),tf,ta,v};}
+function drawCar(ctx,x,y,angle,color,scale=1){ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);ctx.fillStyle=color;ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.roundRect(-6,-10,12,20,3);ctx.fill();ctx.stroke();ctx.fillStyle='#d9f2ff';ctx.fillRect(-4,-6,8,4);ctx.restore();}
+function drawScene(canvasId,model,sec,mode){const canvas=$(canvasId),ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#eaf4ec';ctx.fillRect(0,0,W,H);ctx.fillStyle='#5f6b79';ctx.fillRect(250,0,140,H);ctx.fillRect(0,100,W,100);ctx.strokeStyle='#f6e9b7';ctx.lineWidth=2;ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(320,0);ctx.lineTo(320,H);ctx.moveTo(0,150);ctx.lineTo(W,150);ctx.stroke();ctx.setLineDash([]);
+ const ph=phaseAt(sec,model.t);const nsOn=ph==='N–S green',ewOn=ph==='E–W green';const signal=(x,y,on)=>{ctx.fillStyle='#1c2a3d';ctx.beginPath();ctx.roundRect(x,y,25,55,7);ctx.fill();['#f04a4a','#f1b638','#39d98a'].forEach((c,i)=>{ctx.beginPath();ctx.fillStyle=(i===0&&!on)?c:(i===1&&ph.startsWith('Transition'))?c:(i===2&&on)?c:'#485563';ctx.arc(x+12.5,y+10+i*17,5.7,0,Math.PI*2);ctx.fill();});};signal(220,25,nsOn);signal(395,220,nsOn);signal(395,25,ewOn);signal(220,220,ewOn);
+ ctx.fillStyle='#fff';ctx.font='bold 15px system-ui';ctx.fillText('N',293,18);ctx.fillText('S',293,290);ctx.fillText('W',8,145);ctx.fillText('E',612,145);
+ const drawQueue=(queue,lane,color,cap)=>{const items=queue.filter(c=>c.lane===lane).slice(0,cap);for(let i=0;i<items.length;i++){let x,y,ang=0;if(lane==='n'){x=282;y=88-i*19;ang=Math.PI;}if(lane==='s'){x=358;y=212+i*19;ang=0;}if(lane==='w'){x=232-i*19;y=126;ang=Math.PI/2;}if(lane==='e'){x=408+i*19;y=174;ang=-Math.PI/2;}drawCar(ctx,x,y,ang,color,.82);}};
+ drawQueue(model.qNS,'n','#2786d8',4);drawQueue(model.qNS,'s','#2786d8',4);drawQueue(model.qEW,'w','#e0a12a',4);drawQueue(model.qEW,'e','#e0a12a',4);
+ model.moving.forEach(c=>{let x,y,ang=0;const p=Math.max(0,Math.min(1,c.p));if(c.lane==='n'){x=282;y=88+p*150;ang=Math.PI;}if(c.lane==='s'){x=358;y=212-p*150;ang=0;}if(c.lane==='w'){x=232+p*180;y=126;ang=Math.PI/2;}if(c.lane==='e'){x=408-p*180;y=174;ang=-Math.PI/2;}drawCar(ctx,x,y,ang,c.lane==='n'||c.lane==='s'?'#2786d8':'#e0a12a',.9);});
+ ctx.fillStyle='#17304f';ctx.font='bold 12px system-ui';ctx.fillText('Waiting: '+(model.qNS.length+model.qEW.length),12,20);ctx.fillText(ph,12,285);}
+function liveMetrics(prefix,m,sec){$(prefix+'Served').textContent=m.served;$(prefix+'Queue').textContent=m.qNS.length+m.qEW.length;$(prefix+'Detail').textContent=`Cleared ${m.servedNS} N–S + ${m.servedEW} E–W · waiting ${m.qNS.length+m.qEW.length}`;$(prefix+'Phase').textContent=`${phaseAt(Math.min(sec,899),m.t)} · ${Math.floor(sec/60)}:${String(Math.floor(sec%60)).padStart(2,'0')} / 15:00`;}
+function renderSetup(){const v=vals(),tf=timing(v,'fixed'),ta=timing(v,'adaptive');$('nsOut').textContent=v.ns;$('ewOut').textContent=v.ew;$('cycleOut').textContent=v.cycle+' s';$('fNSgreen').textContent=tf.ns+' s';$('fEWgreen').textContent=tf.ew+' s';$('aNSgreen').textContent=ta.ns+' s';$('aEWgreen').textContent=ta.ew+' s';const dummyF=newModel(v,tf),dummyA=newModel(v,ta);drawScene('fCanvas',dummyF,0,'fixed');drawScene('aCanvas',dummyA,0,'adaptive');}
+function resetResults(){finalResults=null;$('results').innerHTML='<tr><td colspan="3">Run the full simulation to calculate results.</td></tr>';$('csv').disabled=true;$('copy').disabled=true;$('exportStatus').textContent='';$('sumF').textContent='—';$('sumA').textContent='—';$('time').textContent='0:00 / 15:00';$('progress').style.width='0%';$('status').textContent='Ready. Press Run to begin the 15-minute simulated test.';$('fServed').textContent='—';$('aServed').textContent='—';$('fQueue').textContent='—';$('aQueue').textContent='—';$('fDetail').textContent='Run the comparison to see results.';$('aDetail').textContent='Run the comparison to see results.';$('fPhase').textContent='Ready to run';$('aPhase').textContent='Ready to run';}
+function finish(){const {f,a,v,tf,ta}=runState.models;const metrics=m=>({served:m.served,waiting:m.qNS.length+m.qEW.length,avgWait:m.waitCount?Math.round(m.waitSum/m.waitCount*10)/10:0,longest:Math.max(m.longestNS,m.longestEW),nsWaiting:m.qNS.length,ewWaiting:m.qEW.length});const F=metrics(f),A=metrics(a);finalResults={v,tf,ta,F,A};$('results').innerHTML=`<tr><td>Vehicles arriving in 15 min (input)</td><td>${v.ns+v.ew}</td><td>${v.ns+v.ew}</td></tr><tr><td>Vehicles cleared (estimate)</td><td>${F.served}</td><td>${A.served}</td></tr><tr><td>Vehicles left waiting after 15 min</td><td>${F.waiting}</td><td>${A.waiting}</td></tr><tr><td>Average wait of vehicles cleared (seconds)</td><td>${F.avgWait}</td><td>${A.avgWait}</td></tr><tr><td>Longest directional queue (vehicles)</td><td>${F.longest}</td><td>${A.longest}</td></tr><tr><td>N–S / E–W green time per cycle</td><td>${tf.ns}s / ${tf.ew}s</td><td>${ta.ns}s / ${ta.ew}s</td></tr>`;$('sumF').textContent=F.waiting+' vehicles';$('sumA').textContent=A.waiting+' vehicles';$('csv').disabled=false;$('copy').disabled=false;const delta=A.served-F.served;const conclusion=delta>0?`Adaptive cleared ${delta} more vehicles in this simulated scenario.`:delta<0?`Fixed timer cleared ${Math.abs(delta)} more vehicles in this simulated scenario.`:'Both modes cleared the same number in this simulated scenario.';$('status').textContent='15-minute simulation complete. '+conclusion;$('exportStatus').textContent='Outputs are deterministic model estimates under the assumptions shown above.';}
+function tick(now){if(!runState)return;const elapsed=Math.min(REAL_RUN_MS,now-runState.start);const sim=Math.min(DURATION,elapsed/REAL_RUN_MS*DURATION);const previous=runState.lastSim;advance(runState.models.f,previous,sim);advance(runState.models.a,previous,sim);runState.lastSim=sim;const {f,a}=runState.models;drawScene('fCanvas',f,sim,'fixed');drawScene('aCanvas',a,sim,'adaptive');liveMetrics('f',f,sim);liveMetrics('a',a,sim);$('time').textContent=`${Math.floor(sim/60)}:${String(Math.floor(sim%60)).padStart(2,'0')} / 15:00`;$('progress').style.width=(sim/DURATION*100)+'%';$('status').textContent=`Running accelerated simulation · ${Math.floor(sim/DURATION*100)}% complete`;
+ if(elapsed>=REAL_RUN_MS){raf=null;$('run').disabled=false;$('stop').disabled=true;finish();runState=null;return;}raf=requestAnimationFrame(tick);}
+function run(){if(raf)cancelAnimationFrame(raf);resetResults();const v=vals(),tf=timing(v,'fixed'),ta=timing(v,'adaptive');runState={models:{v,tf,ta,f:newModel(v,tf),a:newModel(v,ta)},start:performance.now(),lastSim:0};$('run').disabled=true;$('stop').disabled=false;$('status').textContent='Running… each second represents about 15 simulated seconds.';raf=requestAnimationFrame(tick);}
+function stop(){if(raf)cancelAnimationFrame(raf);raf=null;runState=null;$('run').disabled=false;$('stop').disabled=true;$('status').textContent='Simulation stopped before 15 minutes; run again for final results.';}
+['ns','ew','cycle'].forEach(id=>$(id).addEventListener('input',()=>{if(raf)stop();renderSetup();resetResults()}));$('preset1').onclick=()=>{$('ns').value=270;$('ew').value=95;renderSetup();resetResults()};$('preset2').onclick=()=>{$('ns').value=95;$('ew').value=270;renderSetup();resetResults()};$('preset3').onclick=()=>{$('ns').value=180;$('ew').value=180;renderSetup();resetResults()};$('reset').onclick=()=>{$('ns').value=270;$('ew').value=95;$('cycle').value=60;renderSetup();resetResults()};$('run').onclick=run;$('stop').onclick=stop;
+$('csv').onclick=()=>{if(!finalResults)return;const {v,tf,ta,F,A}=finalResults;const rows=[['Metric','Fixed timer','Adaptive rule'],['N–S arrivals (15 min)',v.ns,v.ns],['E–W arrivals (15 min)',v.ew,v.ew],['N–S green per cycle (s)',tf.ns,ta.ns],['E–W green per cycle (s)',tf.ew,ta.ew],['Vehicles cleared',F.served,A.served],['Vehicles left waiting',F.waiting,A.waiting],['Average wait of cleared vehicles (s)',F.avgWait,A.avgWait],['Longest directional queue',F.longest,A.longest]];const csv=rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='traffic-optimizer-15-minute-results.csv';a.click();URL.revokeObjectURL(url);};$('copy').onclick=async()=>{if(!finalResults)return;const {v,tf,ta,F,A}=finalResults;const s=`Traffic Flow Optimizer — 15-minute simulation estimates\nSame inputs: N–S ${v.ns}, E–W ${v.ew} vehicles arriving.\nFixed timer: green ${tf.ns}s N–S / ${tf.ew}s E–W; cleared ${F.served}; waiting ${F.waiting}; average wait of cleared vehicles ${F.avgWait}s; longest queue ${F.longest}.\nAdaptive: green ${ta.ns}s N–S / ${ta.ew}s E–W; cleared ${A.served}; waiting ${A.waiting}; average wait of cleared vehicles ${A.avgWait}s; longest queue ${A.longest}.\nThese are model estimates, not real traffic measurements.`;try{await navigator.clipboard.writeText(s);$('exportStatus').textContent='Summary copied.'}catch(e){$('exportStatus').textContent=s}};
+renderSetup();
+</script></body></html>
